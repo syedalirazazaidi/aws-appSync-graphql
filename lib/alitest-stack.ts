@@ -1,6 +1,7 @@
 import * as cdk from "@aws-cdk/core";
 import * as appsync from "@aws-cdk/aws-appsync";
 import * as lambda from "@aws-cdk/aws-lambda";
+import * as ddb from "@aws-cdk/aws-dynamodb";
 export class AlitestStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -30,20 +31,30 @@ export class AlitestStack extends cdk.Stack {
       handler: "index.handler", ///specfic fucntion in specific file
       // timeout: cdk.Duration.seconds(10), ///Time for function to break. limit upto 15 mins
     });
+
     const lambda_data_source = api.addLambdaDataSource(
       "lamdaDataSource",
       lambda_function
     );
 
     ///Describing resolver for datasource
-    lambda_data_source.createResolver({
-      typeName: "Query",
-      fieldName: "notes",
-    });
 
     lambda_data_source.createResolver({
       typeName: "Query",
-      fieldName: "customNote",
+      fieldName: "getTodo",
     });
+    lambda_data_source.createResolver({
+      typeName: "Mutation",
+      fieldName: "addTodo",
+    });
+
+    const todosTable = new ddb.Table(this, "bootcampTodosTable", {
+      partitionKey: {
+        name: "id",
+        type: ddb.AttributeType.STRING,
+      },
+    });
+    todosTable.grantFullAccess(lambda_function);
+    lambda_function.addEnvironment("TodoTableName", todosTable.tableName);
   }
 }

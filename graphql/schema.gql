@@ -1,4 +1,13 @@
+type Todo {
+  id: String
+  description: String
+}
+
 type Query {
-  notes: [String]
-  customNote(title: String!): String!
+  hello: String
+  myCustomMessage(msg: String): String
+  getTodo(id: String): Todo
+}
+type Mutation {
+  addTodo(description: String!): String
 }
